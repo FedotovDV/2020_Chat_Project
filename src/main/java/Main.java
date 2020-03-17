@@ -22,8 +22,8 @@ public class Main {
 
             new Thread(() -> {
                 try {
-                    PrintWriter writer = new PrintWriter(socket.getOutputStream());
-                    writer.print(client);
+                    ObjectOutputStream writer = new ObjectOutputStream(socket.getOutputStream());
+                    writer.writeObject(client);
                     writer.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
