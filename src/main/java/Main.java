@@ -1,4 +1,7 @@
 
+import com.google.gson.Gson;
+import lombok.extern.java.Log;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -9,27 +12,44 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("Hi, Client!");
-        try (BufferedReader console = new BufferedReader(new InputStreamReader(System.in))) {
+        try (BufferedReader console = new BufferedReader(
+                new InputStreamReader(System.in));
+        ) {
             Socket socket = new Socket(IP, PORT);
-            Client client = new Client();
-            System.out.println("Введите логин:");
-            client.setUserName(console.readLine());
-            System.out.println(client.getUserName());
-            System.out.println("Введите пароль:");
-            client.setUserPassword(console.readLine().toCharArray());
-            System.out.println(client.toString());
 
+            while (true) {
+                String message = console.readLine();
+                System.out.println("I will send " + message);
 
-            new Thread(() -> {
-                try {
-                    ObjectOutputStream writer = new ObjectOutputStream(socket.getOutputStream());
-                    writer.writeObject(client);
-                    writer.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }).start();
-        } catch (IOException e) {
+                Thread t = new Thread(() -> {
+                    try {
+                        BufferedWriter writer = new BufferedWriter(new PrintWriter(socket.getOutputStream()));
+                        writer.write(message);
+                        writer.newLine();
+                        writer.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                t.start();
+
+                Thread r = new Thread(() -> {
+                    try {
+                        BufferedReader serverReader = new BufferedReader(
+                                new InputStreamReader(socket.getInputStream()));
+
+                            System.out.println(serverReader.readLine());
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                r.start();
+
+                t.join();
+                r.join();
+            }
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
