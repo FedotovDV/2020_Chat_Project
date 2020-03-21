@@ -13,16 +13,14 @@ public class Main {
     public static void main(String[] args) {
 
         System.out.println("Hi, Client!");
-        try (BufferedReader console = new BufferedReader(
-                new InputStreamReader(System.in));
-        ) {
-            Socket socket = new Socket(IP, PORT);
+        try (Socket socket = new Socket(IP, PORT);
+             BufferedReader console = new BufferedReader(new InputStreamReader(System.in))) {
+
             Thread t = new Thread(() -> {
                 try (BufferedWriter writer = new BufferedWriter(new PrintWriter(socket.getOutputStream()))) {
 
                     while (true) {
                         String message = console.readLine();
-                        System.out.println("I will send " + message);
                         writer.write(message);
                         writer.newLine();
                         writer.flush();
@@ -49,11 +47,11 @@ public class Main {
             });
             t.start();
             r.start();
-            t.sleep(1000);
-            t.sleep(1000);
+            t.sleep(1999);
+            r.sleep(1999);
             t.join();
             r.join();
-            socket.close();
+
         } catch (IOException | InterruptedException ex) {
             ex.printStackTrace();
         }
