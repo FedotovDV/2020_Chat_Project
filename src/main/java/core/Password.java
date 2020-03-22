@@ -1,10 +1,15 @@
 package core;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.security.*;
 import java.util.Arrays;
 
 public class Password {
+
+   public String getPassword(){
+       return String.valueOf(loadBytes(new File("password.bin")));
+   }
 
 
     public void setPassword(byte[] pass) throws Exception {
@@ -14,29 +19,29 @@ public class Password {
         byte[] hashVal = messageDigest.digest(input);
         clearArray(pass);
         clearArray(input);
-        saveBytes(salt, "salt.bin");
-        saveBytes(hashVal, "password.bin");
+        saveBytes(salt, new File("salt.bin"));
+        saveBytes(hashVal, new File("password.bin"));
         clearArray(salt);
         clearArray(hashVal);
 
     }
 
     public boolean checkPassword(byte[] pass) throws Exception {
-        byte[] salt = loadBytes("salt.bin");
+        byte[] salt = loadBytes(new File("salt.bin"));
         byte[] input = appendArrays(pass, salt);
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
         byte[] hashVal1 = messageDigest.digest(input);
         clearArray(pass);
         clearArray(input);
-        byte[] hashVal2 = loadBytes("password.bin");
+        byte[] hashVal2 = loadBytes(new File("password.bin"));
         boolean arraysEqual = Arrays.equals(hashVal1, hashVal2);
         clearArray(hashVal1);
         clearArray(hashVal2);
         return arraysEqual;
     }
 
-    private byte[] loadBytes(String file) {
-        byte[] fileInArray = new byte[file.length()];
+    private byte[] loadBytes(File file) {
+        byte[] fileInArray = new byte[(int) file.length()];
         try (FileInputStream reader = new FileInputStream(file)) {
             reader.read(fileInArray);
         } catch (IOException e) {
@@ -45,7 +50,7 @@ public class Password {
         return fileInArray;
     }
 
-    private void saveBytes(byte[] bytes, String file) {
+    private void saveBytes(byte[] bytes, File file) {
         try (BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(file))) {
             for (byte b : bytes) {
                 writer.write(b);

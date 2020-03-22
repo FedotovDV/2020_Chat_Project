@@ -22,11 +22,10 @@ public class Main {
             Password password = new Password();
             String jsonPassword = gson.toJson(client);
             password.setPassword(client.getUserPassword().getBytes());
-            System.out.println("Введите пароль:");
-            String pass = console.readLine();
+            String pass = password.getPassword();
             System.out.println("password.checkPassword(pass.getBytes()) = " + password.checkPassword(pass.getBytes()));
             String loginPassword = "#$#pass#/" + jsonClient + "/" + jsonPassword;
-            System.out.println(password);
+            System.out.println(pass);
 
             Thread t = new Thread(() -> {
                 try (BufferedWriter writer = new BufferedWriter(new PrintWriter(socket.getOutputStream()))) {
