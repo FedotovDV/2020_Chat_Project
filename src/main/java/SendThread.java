@@ -4,6 +4,7 @@ import utility.PasswordEncoding;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 
 public class SendThread implements Runnable {
@@ -40,9 +41,17 @@ public class SendThread implements Runnable {
             while (!thread.isInterrupted()) {
                 String message = console.readLine();
                 SendMessage(writer, message);
-                Thread.sleep(500);
+                if (message.equalsIgnoreCase("Exit")){
+                    thread.interrupt();
+                }
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    thread.interrupt();
+                }
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

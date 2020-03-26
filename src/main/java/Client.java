@@ -1,4 +1,6 @@
 import lombok.*;
+
+
 import java.io.Serializable;
 
 @AllArgsConstructor
@@ -9,7 +11,9 @@ import java.io.Serializable;
 public class Client implements Serializable {
 
     private String userName;
-    private transient String userPassword;
+    private transient char[] password;
+    private String hashPass;
+
     public Client() {
     }
 }

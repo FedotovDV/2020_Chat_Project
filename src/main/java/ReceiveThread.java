@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 public class ReceiveThread implements Runnable {
     private Thread thread;
@@ -30,10 +31,19 @@ public class ReceiveThread implements Runnable {
     public void run() {
         try (BufferedReader serverReader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                     while (!thread.isInterrupted()) {
-                        System.out.println(serverReader.readLine());
-                        Thread.sleep(500);
+                        String message = serverReader.readLine();
+                        System.out.println(message);
+                        if (message.equalsIgnoreCase("Exit")){
+                            thread.interrupt();
+                        }
+                        try {
+                            TimeUnit.SECONDS.sleep(1);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            thread.interrupt();
+                        }
                     }
-                } catch (IOException | InterruptedException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
     }
