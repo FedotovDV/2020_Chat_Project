@@ -11,8 +11,8 @@ public class ReceiveThread implements Runnable {
 
     public ReceiveThread(Client client, Socket socket) {
         thread = new Thread(this);
-        this.client =client;
-        this.socket =socket;
+        this.client = client;
+        this.socket = socket;
 
     }
 
@@ -24,27 +24,32 @@ public class ReceiveThread implements Runnable {
         thread.interrupt();
     }
 
-    public void join() throws InterruptedException {
-        thread.join();
-    }
+
+
     @Override
     public void run() {
         try (BufferedReader serverReader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                    while (!thread.isInterrupted()) {
-                        String message = serverReader.readLine();
-                        System.out.println(message);
-                        if (message.equalsIgnoreCase("Exit")){
-                            thread.interrupt();
-                        }
-                        try {
-                            TimeUnit.SECONDS.sleep(1);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            thread.interrupt();
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+            while (!thread.isInterrupted()) {
+                String message = serverReader.readLine();
+                String clientsInChat = "members in chat = ";
+//                if (message.indexOf(clientsInChat) == 0) {
+//                    jlNumberOfClients.setText(message);
+//                } else {
+//                    setJtaTextAreaMessage(message);
+//                    jtaTextAreaMessage.append("\n");
+//                }
+                if (message.equalsIgnoreCase("Exit")) {
+                    thread.interrupt();
                 }
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    thread.interrupt();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

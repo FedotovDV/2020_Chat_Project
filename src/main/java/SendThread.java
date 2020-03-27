@@ -35,6 +35,7 @@ public class SendThread implements Runnable {
     public void run() {
         try (BufferedWriter writer = new BufferedWriter(new PrintWriter(socket.getOutputStream()));
              BufferedReader console = new BufferedReader(new InputStreamReader(System.in))) {
+
             Gson gson = new Gson();
             String jsonClient = gson.toJson(client);
             SendMessage(writer, jsonClient);
