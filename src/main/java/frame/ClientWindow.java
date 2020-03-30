@@ -1,4 +1,8 @@
+package frame;
+
+import client.Client;
 import lombok.SneakyThrows;
+import utility.SendThread;
 
 import javax.swing.*;
 import java.awt.*;
@@ -6,20 +10,21 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
+
 
 public class ClientWindow extends JFrame {
     public final static String SERVER_HOST = "localhost";
     public final static int SERVER_PORT = 8290;
-    private Thread thread;
+
     private Client client;
     private Socket clientSocket;
     private Scanner inMessage;
     private PrintWriter outMessage;
-
+    private JLabel jlNumberOfClients;
     private JTextField jtfMessage;
-    private JLabel userName;
+    private JLabel jlUserName;
     private JTextArea jtaTextAreaMessage;
+
 
 
     public ClientWindow(Client client) {
@@ -36,7 +41,7 @@ public class ClientWindow extends JFrame {
 
 
         setBounds(600, 300, 600, 500);
-        setTitle("Client");
+        setTitle("client.Client");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         jtaTextAreaMessage = new JTextArea();
         jtaTextAreaMessage.setEditable(false);
@@ -44,7 +49,7 @@ public class ClientWindow extends JFrame {
         JScrollPane jsp = new JScrollPane(jtaTextAreaMessage);
         add(jsp, BorderLayout.CENTER);
 
-        JLabel jlNumberOfClients = new JLabel("Members in chat: ");
+        jlNumberOfClients = new JLabel("Members in chat: ");
         add(jlNumberOfClients, BorderLayout.NORTH);
         JPanel bottomPanel = new JPanel(new BorderLayout());
         add(bottomPanel, BorderLayout.SOUTH);
@@ -52,8 +57,8 @@ public class ClientWindow extends JFrame {
         bottomPanel.add(jbSendMessage, BorderLayout.EAST);
         jtfMessage = new JTextField("Enter your message: ");
         bottomPanel.add(jtfMessage, BorderLayout.CENTER);
-        userName = new JLabel(client.getUserName() + "    ");
-        bottomPanel.add(userName, BorderLayout.WEST);
+        jlUserName = new JLabel("  " + client.getUserName() + "    ");
+        bottomPanel.add(jlUserName, BorderLayout.WEST);
 
         jbSendMessage.addActionListener(e -> {
             if (!jtfMessage.getText().trim().isEmpty()) {
@@ -70,35 +75,9 @@ public class ClientWindow extends JFrame {
         });
 
         SendThread sendThread = new SendThread(client, clientSocket);
-//        ReceiveThread receiveThread = new ReceiveThread(client, clientSocket);
+       utility.ReceiveThread receiveThread = new utility.ReceiveThread(client, clientSocket, this);
         sendThread.start();
-//        receiveThread.start();
-        new Thread(() -> {
-            try (BufferedReader serverReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-                while (true) {
-                    String message = serverReader.readLine();
-                    String clientsInChat = "members in chat = ";
-                    if (message.indexOf(clientsInChat) == 0) {
-                        jlNumberOfClients.setText(message);
-                    } else {
-                        jtaTextAreaMessage.append(message);
-                        jtaTextAreaMessage.append("\n");
-                    }
-                    if (message.equalsIgnoreCase("Exit")) {
-                        thread.interrupt();
-                    }
-                    try {
-                        TimeUnit.SECONDS.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        thread.interrupt();
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
-
+        receiveThread.start();
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -119,6 +98,14 @@ public class ClientWindow extends JFrame {
         setVisible(true);
 
 
+    }
+
+    public  void setTextAreaMessage(String message) {
+        jtaTextAreaMessage.append(message);
+    }
+
+    public  void setNumberOfClient(String message) {
+        jlNumberOfClients.setText(message);
     }
 
 

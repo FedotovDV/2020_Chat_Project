@@ -1,6 +1,7 @@
+package utility;
+
+import client.Client;
 import com.google.gson.Gson;
-import sun.security.util.Password;
-import utility.PasswordEncoding;
 
 import java.io.*;
 import java.net.Socket;

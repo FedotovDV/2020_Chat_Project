@@ -1,3 +1,6 @@
+package frame;
+
+import client.Client;
 import lombok.SneakyThrows;
 
 import utility.PasswordEncoding;
@@ -10,7 +13,7 @@ import java.awt.event.ActionListener;
 
 public class LoginForm extends JFrame implements ActionListener {
 
-//    private Client client;
+//    private client.Client client;
     Container container = getContentPane();
     JLabel userLabel = new JLabel("USERNAME");
     JLabel passwordLabel = new JLabel("PASSWORD");
@@ -77,11 +80,12 @@ public class LoginForm extends JFrame implements ActionListener {
             String userText;
             userText = userTextField.getText();
             client.setUserName(userText);
-            String passwordFieldText = passwordField.getText();
+            String passwordFieldText =new String(passwordField.getPassword());
             client.setPassword(passwordFieldText.toCharArray());
             PasswordEncoding hashPass = new PasswordEncoding();
             client.setHashPass(hashPass.hashPassword(client.getPassword()));
             if (client.getUserName()!=null && client.getPassword()!=null) {
+
                 JOptionPane.showMessageDialog(this, "Login Successful");
                 this.setVisible(false);
                 ClientWindow clientWindow = new ClientWindow(client);
