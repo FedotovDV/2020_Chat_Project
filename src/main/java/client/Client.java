@@ -15,6 +15,7 @@ public class Client implements Serializable {
     private String userName;
     private transient char[] password;
     private String hashPass;
+    private int userId;
 
     public Client() {
     }
