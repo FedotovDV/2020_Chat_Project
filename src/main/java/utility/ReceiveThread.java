@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+
+import com.google.gson.Gson;
 import frame.ClientWindow;
 
 public class ReceiveThread implements Runnable {
@@ -32,21 +34,28 @@ public class ReceiveThread implements Runnable {
     }
 
 
-
     @Override
     public void run() {
         try (BufferedReader serverReader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             while (!thread.isInterrupted()) {
                 String message = serverReader.readLine();
                 String clientsInChat = "Members in chat = ";
-                if (message.indexOf(clientsInChat) == 0) {
-                    clientWindow.setNumberOfClient(message);
-                } else {
+                if (message.startsWith("{")) {
+                    Gson gson = new Gson();
+                    client = gson.fromJson(message, Client.class);
+                    clientWindow.setTextAreaMessage("Сведения о клиенте: ");
                     clientWindow.setTextAreaMessage(message);
                     clientWindow.setTextAreaMessage("\n");
-                }
-                if (message.equalsIgnoreCase("Exit")) {
-                    thread.interrupt();
+                } else {
+                    if (message.indexOf(clientsInChat) == 0) {
+                        clientWindow.setNumberOfClient(message);
+                    } else {
+                        clientWindow.setTextAreaMessage(message);
+                        clientWindow.setTextAreaMessage("\n");
+                    }
+                    if (message.equalsIgnoreCase("Exit")) {
+                        thread.interrupt();
+                    }
                 }
                 try {
                     TimeUnit.SECONDS.sleep(1);
@@ -54,6 +63,7 @@ public class ReceiveThread implements Runnable {
                     e.printStackTrace();
                     thread.interrupt();
                 }
+
             }
         } catch (IOException e) {
             e.printStackTrace();
