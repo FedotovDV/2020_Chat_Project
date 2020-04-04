@@ -1,29 +1,36 @@
 package utility;
+import interfaces.PasswordEncoder;
 import lombok.*;
 import java.security.MessageDigest;
 
 @Getter
-public class PasswordEncoding {
+public class PasswordEncoding implements PasswordEncoder {
 
     private String hashPass;
 
 
-
+    @Override
     public String hashPassword(char[] pass) throws Exception {
         this.hashPass = byteArrayToHexString(computeHash(String.valueOf(pass)));
         return hashPass;
     }
 
+    @Override
     public boolean checkPassword(char[] pass) throws Exception {
         String inputHash = byteArrayToHexString(computeHash(String.valueOf(pass)));
-        return this.hashPass.equals(inputHash);
+        if (this.hashPass.equals(inputHash)) {
+            return true;
+        }
+        return false;
     }
 
+
+    @Override
     public boolean checkPassword(String hashPass) {
         return this.hashPass.equals(hashPass);
     }
 
-    public static byte[] computeHash(String pass)
+    private static byte[] computeHash(String pass)
             throws Exception {
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
         messageDigest.reset();
@@ -31,7 +38,7 @@ public class PasswordEncoding {
         return messageDigest.digest();
     }
 
-    public static String byteArrayToHexString(byte[] bytes) {
+    private static String byteArrayToHexString(byte[] bytes) {
         StringBuilder stringBuilder = new StringBuilder(bytes.length * 2);
         for (byte aByte : bytes) {
             int var = aByte & 0xff;

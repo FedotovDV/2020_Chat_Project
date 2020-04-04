@@ -9,19 +9,20 @@ import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
-import frame.ClientWindow;
+import frame.GUIClient;
+
 
 public class ReceiveThread implements Runnable {
     private Thread thread;
     private Client client;
     private Socket socket;
-    private ClientWindow clientWindow;
+    private GUIClient guiClient;
 
-    public ReceiveThread(Client client, Socket socket, ClientWindow clientWindow) {
+    public ReceiveThread(Client client, Socket socket, GUIClient guiClien) {
         thread = new Thread(this);
         this.client = client;
         this.socket = socket;
-        this.clientWindow = clientWindow;
+        this.guiClient = guiClien;
 
     }
 
@@ -43,15 +44,15 @@ public class ReceiveThread implements Runnable {
                 if (message.startsWith("{")) {
                     Gson gson = new Gson();
                     client = gson.fromJson(message, Client.class);
-                    clientWindow.setTextAreaMessage("Сведения о клиенте: ");
-                    clientWindow.setTextAreaMessage(message);
-                    clientWindow.setTextAreaMessage("\n");
+                    guiClient.setTextAreaMessage("Сведения о клиенте: ");
+                    guiClient.setTextAreaMessage(message);
+                    guiClient.setTextAreaMessage("\n");
                 } else {
                     if (message.indexOf(clientsInChat) == 0) {
-                        clientWindow.setNumberOfClient(message);
+                        guiClient.setNumberOfClient(message);
                     } else {
-                        clientWindow.setTextAreaMessage(message);
-                        clientWindow.setTextAreaMessage("\n");
+                        guiClient.setTextAreaMessage(message);
+                        guiClient.setTextAreaMessage("\n");
                     }
                     if (message.equalsIgnoreCase("Exit")) {
                         thread.interrupt();
