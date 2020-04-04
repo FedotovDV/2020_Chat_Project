@@ -1,35 +1,46 @@
 package frame;
 
+
 import client.Client;
+import frame.LoginForm;
+import lombok.Getter;
 import lombok.SneakyThrows;
+import utility.PasswordEncoding;
+import utility.ReceiveThread;
 import utility.SendThread;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
+import lombok.extern.log4j.Log4j;
+import utility.TypeMessage;
 
-public class ClientWindow extends JFrame {
+@Getter
+@Log4j
+public class GUIClient extends JFrame {
+
     public final static String SERVER_HOST = "localhost";
     public final static int SERVER_PORT = 8290;
-
     private Client client;
     private Socket clientSocket;
     private Scanner inMessage;
     private PrintWriter outMessage;
+
+
     private JLabel jlNumberOfClients;
     private JTextField jtfMessage;
     private JLabel jlUserName;
     private JTextArea jtaTextAreaMessage;
 
 
-
-    public ClientWindow(Client client) {
-        this.client = client;
-
+    public GUIClient() {
+        log.info("Client start");
 
         try {
             clientSocket = new Socket(SERVER_HOST, SERVER_PORT);
@@ -38,10 +49,54 @@ public class ClientWindow extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        client = enterLoginPassword();
+        drawClientWindow();
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                try {
+                    outMessage.println("Exit");
+                    outMessage.flush();
+                    outMessage.close();
+                    inMessage.close();
+                    clientSocket.close();
+                } catch (IOException exc) {
+
+                }
+            }
+        });
+
+        setVisible(true);
+        SendThread sendThread = new SendThread(client, clientSocket, this);
+        ReceiveThread receiveThread = new utility.ReceiveThread(client, clientSocket, this);
+        sendThread.start();
+        receiveThread.start();
 
 
+    }
+
+    public JTextField getJtfMessage() {
+        return jtfMessage;
+    }
+
+
+    @SneakyThrows
+    private Client enterLoginPassword() {
+        client = new Client();
+        String result = JOptionPane.showInputDialog("<html><h2>Введите логин");
+        client.setUserName(result);
+        String passwordFieldText = JOptionPane.showInputDialog("<html><h2>Введите пароль");
+        client.setPassword(passwordFieldText.toCharArray());
+        PasswordEncoding hashPass = new PasswordEncoding();
+        client.setHashPass(hashPass.hashPassword(client.getPassword()));
+        return client;
+    }
+
+    private void drawClientWindow() {
         setBounds(600, 300, 600, 500);
-        setTitle("client.Client");
+        setTitle("Client");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         jtaTextAreaMessage = new JTextArea();
         jtaTextAreaMessage.setEditable(false);
@@ -73,48 +128,33 @@ public class ClientWindow extends JFrame {
                 jtfMessage.setText("");
             }
         });
-
-        SendThread sendThread = new SendThread(client, clientSocket);
-       utility.ReceiveThread receiveThread = new utility.ReceiveThread(client, clientSocket, this);
-        sendThread.start();
-        receiveThread.start();
-
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                super.windowClosing(e);
-                try {
-                    outMessage.println("Exit");
-                    outMessage.flush();
-                    outMessage.close();
-                    inMessage.close();
-                    clientSocket.close();
-                } catch (IOException exc) {
-
-                }
-            }
-        });
-
-        setVisible(true);
-
-
     }
 
-    public  void setTextAreaMessage(String message) {
+
+    public void setTextAreaMessage(String message) {
         jtaTextAreaMessage.append(message);
     }
 
-    public  void setNumberOfClient(String message) {
+    public void setNumberOfClient(String message) {
         jlNumberOfClients.setText(message);
     }
 
 
     @SneakyThrows
     private void SendMessage(String message) {
+        String sendMessage;
         BufferedWriter writer = new BufferedWriter(outMessage);
-        writer.write(message);
+        if (message.equalsIgnoreCase("Exit")) {
+            sendMessage = TypeMessage.LOGOUT.name();
+
+        }else {
+            sendMessage = TypeMessage.MESSAGE.name() + message;
+        }
+        log.info("sendMessage = " + sendMessage);
+        writer.write(sendMessage);
         writer.newLine();
         writer.flush();
+
     }
 
 }
